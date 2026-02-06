@@ -1,18 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   rip_2.c                                            :+:      :+:    :+:   */
+/*   rip.c                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fadzejli <fadzejli@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fadwa <fadwa@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/20 17:17:57 by fadzejli          #+#    #+#             */
-/*   Updated: 2025/11/20 17:29:07 by fadzejli         ###   ########.fr       */
+/*   Updated: 2026/02/04 17:24:02 by fadwa            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <stdio.h>
-#include <string.h>
 #include <unistd.h>
+
+#define MAX_SOLUTIONS 10
+#define MAX_LEN 20
+
+char solutions[MAX_SOLUTIONS][MAX_LEN];
+int solution_count = 0;
 
 int	ft_strlen(char *s)
 {
@@ -20,6 +24,25 @@ int	ft_strlen(char *s)
 	while (s[i])
 		i++;
 	return (i);
+}
+
+void ft_strcpy(char *dst, char *src)
+{
+	int i = 0;
+	while (src[i])
+	{
+		dst[i] = src[i];
+		i++;
+	}
+	dst[i] = '\0';
+}
+
+int ft_strcmp(char *s1, char *s2)
+{
+	int i = 0;
+	while (s1[i] && s2[i] && s1[i] == s2[i])
+		i++;
+	return (s1[i] - s2[i]);
 }
 
 int	check_args(char *line)
@@ -30,7 +53,7 @@ int	check_args(char *line)
 		return (1);
 	while (line[i])
 	{
-		if (line[i] != '(' && line[i] != ')' && line[i] != ' ')
+		if (line[i] != '(' && line[i] != ')')
 			return (1);
 		i++;
 	}
@@ -54,9 +77,32 @@ int	is_valid(char *line)
 			else
 				close++;
 		}
+		else if (line[i] != ' ')  // Ignorer les espaces
+			return (1);
 		i++;
 	}
 	return (open + close);
+}
+
+int solution_exists(char *str)
+{
+	int i = 0;
+	while (i < solution_count)
+	{
+		if (ft_strcmp(solutions[i], str) == 0)
+			return (1);
+		i++;
+	}
+	return (0);
+}
+
+void add_solution(char *str)
+{
+	if (!solution_exists(str) && solution_count < MAX_SOLUTIONS)
+	{
+		ft_strcpy(solutions[solution_count], str);
+		solution_count++;
+	}
 }
 
 void	backtrack(char *str, int i, int to_rem, int removed)
@@ -66,7 +112,7 @@ void	backtrack(char *str, int i, int to_rem, int removed)
 	if (i == ft_strlen(str))
 	{
 		if (!is_valid(str) && to_rem == removed)
-			puts(str);
+			add_solution(str);
 		return ;
 	}
 	if (removed > to_rem)
@@ -85,6 +131,10 @@ void	backtrack(char *str, int i, int to_rem, int removed)
 
 int	main(int ac, char **av)
 {
+	char copy[MAX_LEN];
+	int i;
+	
+	solution_count = 0;
 	if (ac != 2 || check_args(av[1]))
 		return (1);
 	if (!is_valid(av[1]))
@@ -92,6 +142,14 @@ int	main(int ac, char **av)
 		puts(av[1]);
 		return (0);
 	}
-	backtrack(av[1], 0, is_valid(av[1]), 0);
+	ft_strcpy(copy, av[1]);
+	backtrack(copy, 0, is_valid(av[1]), 0);
+	i = 0;
+	while (i < solution_count)
+	{
+		puts(solutions[i]);
+		i++;
+	}
+	
 	return (0);
 }
